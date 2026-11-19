@@ -151,3 +151,4 @@ técnico no celular — ele vê só mensagens em português, simples.
 Para usar Claude em vez de Gemini, altere apenas o arquivo `api/analisar.js`:
 o endpoint, o cabeçalho de autenticação e o caminho de leitura da resposta.
 O app do celular não muda nada — ele só conversa com o seu backend.
+Versão corrigida.
