@@ -71,6 +71,29 @@
   .action-item{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px;}
   .action-item .tag{font-family:var(--mono);font-size:9.5px;font-weight:700;text-transform:uppercase;color:var(--amber);margin-bottom:5px;display:block;}
   .divider{height:1px;background:var(--line);margin:16px 0;}
+
+  /* Prévia editável do plano de ação */
+  .preview-dica{font-size:11.5px;color:var(--ink-dim);margin:-4px 0 12px;line-height:1.4;}
+  .plano-card{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:11px;
+    padding:13px;margin-bottom:12px;
+  }
+  .plano-cab{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .plano-num{
+    font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.8px;
+    background:var(--amber);color:#1A1200;padding:3px 8px;border-radius:5px;
+  }
+  .plano-tipo{font-family:var(--mono);font-size:9.5px;color:var(--amber);letter-spacing:.5px;}
+  .plano-lbl{
+    display:block;font-size:10.5px;font-family:var(--mono);color:var(--ink-dim);
+    text-transform:uppercase;letter-spacing:.6px;margin:10px 0 4px;font-weight:700;
+  }
+  .plano-in{
+    width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:8px 10px;font-size:13px;font-family:var(--sans);outline:none;
+  }
+  .plano-in:focus{border-color:var(--amber);}
+  textarea.plano-in{min-height:52px;resize:vertical;line-height:1.4;}
   .hist-item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:10px;cursor:pointer;}
   .hist-item .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px;}
   .hist-item .tag-line{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;}
@@ -80,9 +103,120 @@
   .empty-state .big{font-size:30px;margin-bottom:8px;}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--line);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:50;opacity:0;pointer-events:none;transition:.25s;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  /* ===== Tela de abertura ===== */
+  #splash{
+    position:fixed; inset:0; z-index:999; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:0; overflow:hidden;
+  }
+  #splash.sair{ opacity:0; transform:scale(1.06); transition:opacity .55s ease, transform .55s ease; pointer-events:none; }
+
+  /* engrenagens de fundo */
+  .eng{position:absolute; border-radius:50%; border:2px dashed rgba(255,122,26,.13);}
+  .eng::after{content:''; position:absolute; inset:14%; border-radius:50%; border:2px solid rgba(255,122,26,.09);}
+  .eng1{width:230px;height:230px; top:-60px; left:-70px; animation:girar 14s linear infinite;}
+  .eng2{width:170px;height:170px; bottom:-40px; right:-45px; animation:girar 10s linear infinite reverse;}
+  @keyframes girar{to{transform:rotate(360deg);}}
+
+  /* espinha de peixe desenhando */
+  .fish{width:190px;height:74px;margin-bottom:24px;}
+  .fish path, .fish line{
+    stroke:var(--amber); fill:none; stroke-width:2.4; stroke-linecap:round;
+    stroke-dasharray:120; stroke-dashoffset:120;
+    animation:tracar .75s ease forwards;
+  }
+  .fish .b1{animation-delay:.15s;} .fish .b2{animation-delay:.42s;}
+  .fish .b3{animation-delay:.62s;} .fish .b4{animation-delay:.82s;}
+  .fish .b5{animation-delay:1.02s;} .fish .head{animation-delay:1.25s;}
+  @keyframes tracar{to{stroke-dashoffset:0;}}
+
+  .splash-mark{
+    width:66px;height:66px;border-radius:16px;
+    background:linear-gradient(135deg,var(--amber),var(--amber-dim));
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-weight:700;font-size:26px;color:#1A1200;
+    margin-bottom:20px; opacity:0;
+    animation:surgir .6s ease .2s forwards, pulsar 2.6s ease-in-out 1.4s infinite;
+    box-shadow:0 10px 34px rgba(255,122,26,.32);
+  }
+  @keyframes surgir{from{opacity:0;transform:translateY(14px) scale(.85);}to{opacity:1;transform:none;}}
+  @keyframes pulsar{0%,100%{box-shadow:0 10px 34px rgba(255,122,26,.32);}50%{box-shadow:0 10px 46px rgba(255,122,26,.55);}}
+
+  .splash-titulo{
+    font-size:30px;font-weight:800;letter-spacing:5px;color:var(--ink);
+    opacity:0; animation:surgir .7s ease 1.5s forwards;
+  }
+  .splash-sub{
+    font-family:var(--mono);font-size:11px;letter-spacing:2.4px;color:var(--amber);
+    margin-top:8px; opacity:0; animation:surgir .7s ease 2.1s forwards;
+  }
+  .splash-linha{
+    width:0;height:2px;margin-top:20px;
+    background:linear-gradient(90deg,transparent,var(--amber),transparent);
+    animation:expandir 1.1s ease 2.5s forwards;
+  }
+  @keyframes expandir{to{width:210px;}}
+
+  .splash-passos{
+    margin-top:22px; display:flex; gap:16px;
+    font-family:var(--mono); font-size:9.5px; letter-spacing:1px; color:var(--ink-dim);
+  }
+  .splash-passos span{opacity:0; animation:surgir .5s ease forwards;}
+  .splash-passos span:nth-child(1){animation-delay:3.1s;}
+  .splash-passos span:nth-child(2){animation-delay:3.6s;}
+  .splash-passos span:nth-child(3){animation-delay:4.1s;}
+
+  .splash-rodape{
+    position:absolute; bottom:34px; text-align:center;
+    font-size:10.5px; color:var(--ink-dim); opacity:0;
+    animation:surgir .6s ease 4.6s forwards;
+  }
+  .splash-barra{
+    position:absolute; bottom:20px; width:150px; height:2px;
+    background:var(--line); border-radius:2px; overflow:hidden;
+  }
+  .splash-barra i{display:block;height:100%;width:0;background:var(--amber);animation:carregar 7s linear forwards;}
+  @keyframes carregar{to{width:100%;}}
+
+  @media (prefers-reduced-motion: reduce){
+    #splash *{animation-duration:.01s !important; animation-delay:0s !important;}
+  }
 </style>
 </head>
 <body>
+
+<div id="splash">
+  <div class="eng eng1"></div>
+  <div class="eng eng2"></div>
+
+  <svg class="fish" viewBox="0 0 190 74">
+    <!-- espinha central -->
+    <line x1="8" y1="37" x2="140" y2="37"/>
+    <!-- ramos 4M -->
+    <line class="b1" x1="42" y1="37" x2="28" y2="12"/>
+    <line class="b2" x1="42" y1="37" x2="28" y2="62"/>
+    <line class="b3" x1="86" y1="37" x2="72" y2="12"/>
+    <line class="b4" x1="86" y1="37" x2="72" y2="62"/>
+    <line class="b5" x1="122" y1="37" x2="110" y2="16"/>
+    <!-- cabeça -->
+    <path class="head" d="M140 37 L166 20 L166 54 Z"/>
+  </svg>
+
+  <div class="splash-mark">4M</div>
+  <div class="splash-titulo">FSP DIGITAL</div>
+  <div class="splash-sub">ANÁLISE DE FALHA</div>
+  <div class="splash-linha"></div>
+
+  <div class="splash-passos">
+    <span>ISHIKAWA 4M</span>
+    <span>5 PORQUÊS</span>
+    <span>PLANO DE AÇÃO</span>
+  </div>
+
+  <div class="splash-rodape">Ishikawa · MASP · Kaizen</div>
+  <div class="splash-barra"><i></i></div>
+</div>
 
 <div class="appbar">
   <div class="mark">4M</div>
@@ -161,6 +295,14 @@ const BACKEND_URL = "/api/analisar";
 let ultimoRegistro = null;
 let _gerando = false;
 
+function fecharSplash(){
+  const s = document.getElementById('splash');
+  if(!s) return;
+  s.classList.add('sair');
+  setTimeout(()=>{ s.remove(); }, 600);
+}
+setTimeout(fecharSplash, 7000);
+
 
 
 function switchTab(t){
@@ -224,37 +366,18 @@ async function gerarAnalise(){
   document.getElementById('resultCard').classList.add('hidden');
   document.getElementById('loadingCard').classList.remove('hidden');
 
-  // Prazo do lado do app: se o servidor não responder, avisa em vez de
-  // deixar a tela de carregando para sempre.
-  const ctrl = new AbortController();
-  const prazo = setTimeout(()=>ctrl.abort(), 55000);
-
   try{
-    let resp;
-    try{
-      resp = await fetch(BACKEND_URL,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(d),
-        signal: ctrl.signal
-      });
-    }catch(e){
-      if(e && e.name==='AbortError') throw new Error('O servidor demorou demais para responder. Tente novamente em alguns segundos.');
-      throw new Error('Sem conexão com o servidor. Verifique a internet e tente novamente.');
-    }
-
+    const resp = await fetch(BACKEND_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(d)
+    });
     const raw = await resp.text();
     let json;
     try{ json = JSON.parse(raw); }
-    catch(e){
-      // Resposta que não é JSON: normalmente a página de erro da própria
-      // hospedagem (tempo esgotado na função) ou URL de backend errada.
-      if(resp.status===504 || resp.status===502 || /timed out|timeout/i.test(raw))
-        throw new Error('O servidor atingiu o tempo limite durante a análise. Tente novamente.');
-      throw new Error('Servidor respondeu em formato inesperado. Confira a URL do backend.');
-    }
+    catch(e){ throw new Error('Servidor respondeu em formato inesperado. Confira a URL do backend.'); }
 
-    if(!resp.ok) throw new Error((json.erro || ('Erro '+resp.status)) + (json.detalhe ? '\n\n['+json.detalhe+']' : ''));
+    if(!resp.ok) throw new Error(json.erro || ('Erro '+resp.status));
     if(!json.quatro_m || !json.causa_raiz || !Array.isArray(json.acoes)) throw new Error('Análise incompleta. Tente novamente.');
 
     const reg={id:'reg_'+Date.now(),input:d,analise:json,criadoEm:new Date().toISOString()};
@@ -263,9 +386,8 @@ async function gerarAnalise(){
     await salvarRegistro(reg);
   }catch(err){
     console.error(err);
-    errBox.innerHTML='<div class="error-box" style="white-space:pre-wrap">'+escapeHtml(err.message)+'</div>';
+    errBox.innerHTML='<div class="error-box">'+escapeHtml(err.message)+'</div>';
   }finally{
-    clearTimeout(prazo);
     _gerando=false;
     document.getElementById('loadingCard').classList.add('hidden');
     document.getElementById('btnGerar').disabled=false;
@@ -303,13 +425,91 @@ function renderResultado(reg){
     <div class="divider"></div>
     <p class="section-label">Ações sugeridas pela análise</p>
     ${acoes}
+
+    <div class="divider"></div>
+    <p class="section-label">Plano de ação — confira antes de emitir</p>
+    <p class="preview-dica">Ajuste o que for necessário. O PDF sai com estes valores.</p>
+    <div id="planoPreview">${montarPreviaPlano(reg)}</div>
+
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="gerarPDF()">Baixar PDF</button>
+      <button class="btn btn-primary" onclick="gerarPDF()">Validar e Gerar PDF</button>
       <button class="btn btn-secondary" onclick="copiarRelatorio()">Copiar</button>
       <button class="btn btn-secondary" onclick="novaAnalise()">Nova</button>
     </div>`;
   document.getElementById('resultCard').classList.remove('hidden');
   document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ===== Plano de ação: dados, prévia editável e leitura ===== */
+function calcPrazo(dataBase, tipo){
+  const base = dataBase ? new Date(dataBase + 'T12:00:00') : new Date();
+  const dias = /MITIGA/i.test(tipo||'') ? 7 : 30;
+  base.setDate(base.getDate() + dias);
+  const dd = String(base.getDate()).padStart(2,'0');
+  const mm = String(base.getMonth()+1).padStart(2,'0');
+  return `${dd}/${mm}/${base.getFullYear()}`;
+}
+
+function montarLinhasPlano(reg){
+  const d = reg.input, a = reg.analise;
+  return a.acoes.map((ac,i)=>{
+    const ehMitig = /MITIGA/i.test(ac.tipo||'');
+    return {
+      num:   String(i+1),
+      tipo:  ac.tipo||'',
+      prob:  d.problema||'',
+      causa: a.causa_raiz||'',
+      corr:  ehMitig ? (ac.texto||'') : (d.corretiva || ac.texto || ''),
+      prev:  ehMitig ? (d.preventiva||'') : (ac.texto||''),
+      resp:  d.tecnico||'',
+      prazo: calcPrazo(d.data, ac.tipo),
+      stat:  a.status_sugerido||'Em análise',
+      orig:  'Análise de Falha (4M + 5 Porquês)',
+      area:  '',
+      tag:   d.tag||'',
+      linha: d.linha||''
+    };
+  });
+}
+
+const CAMPOS_PLANO = [
+  {k:'prob',  r:'Problema',              area:true},
+  {k:'causa', r:'Causa raiz',            area:true},
+  {k:'corr',  r:'Contramedida corretiva',area:true},
+  {k:'prev',  r:'Contramedida preventiva',area:true},
+  {k:'resp',  r:'Responsável'},
+  {k:'prazo', r:'Prazo'},
+  {k:'stat',  r:'Status'},
+  {k:'orig',  r:'Origem da ação'},
+  {k:'area',  r:'Área'},
+  {k:'tag',   r:'TAG'},
+  {k:'linha', r:'Linha'}
+];
+
+function montarPreviaPlano(reg){
+  const linhas = montarLinhasPlano(reg);
+  return linhas.map((L,idx)=>`
+    <div class="plano-card">
+      <div class="plano-cab">
+        <span class="plano-num">AÇÃO ${L.num}</span>
+        <span class="plano-tipo">${escapeHtml(L.tipo)}</span>
+      </div>
+      ${CAMPOS_PLANO.map(c=>`
+        <label class="plano-lbl">${c.r}</label>
+        ${c.area
+          ? `<textarea class="plano-in" data-k="${c.k}" data-i="${idx}">${escapeHtml(L[c.k])}</textarea>`
+          : `<input class="plano-in" data-k="${c.k}" data-i="${idx}" value="${escapeHtml(L[c.k])}">`}
+      `).join('')}
+    </div>`).join('');
+}
+
+function lerPlanoEditado(reg){
+  const linhas = montarLinhasPlano(reg);
+  document.querySelectorAll('#planoPreview .plano-in').forEach(el=>{
+    const i = parseInt(el.dataset.i,10);
+    if(linhas[i]) linhas[i][el.dataset.k] = el.value;
+  });
+  return linhas;
 }
 
 function montarTexto(reg){
@@ -423,6 +623,228 @@ function gerarPDF(){
   doc.setFont('helvetica','bold'); doc.setFontSize(10);
   doc.text(`STATUS: ${a.status_sugerido}`,M,y);
   doc.text(`TÉCNICO: ${d.tecnico||'—'}`,M+90,y);
+
+  /* ===== PÁGINA: DIAGRAMA DE ISHIKAWA (4M) + 5 PORQUÊS ===== */
+  doc.addPage();
+
+  // Cabeçalho da página
+  doc.setFillColor(20,23,28); doc.rect(0,0,210,20,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text('DIAGRAMA DE ISHIKAWA – 4M',M,9);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(200);
+  doc.text(`${d.tag||'—'} · ${d.linha||'—'} · ${d.data||'—'}`,M,15.5);
+  doc.setTextColor(0);
+
+  // --- Geometria da espinha ---
+  const espX0 = 18;          // início da espinha
+  const espX1 = 150;         // fim da espinha (antes da cabeça)
+  const espY  = 88;          // altura da linha central
+  const cabW  = 40;          // largura da caixa do problema
+
+  // Espinha central
+  doc.setDrawColor(40,45,55); doc.setLineWidth(1.1);
+  doc.line(espX0, espY, espX1, espY);
+  // seta
+  doc.line(espX1, espY, espX1-3, espY-2);
+  doc.line(espX1, espY, espX1-3, espY+2);
+
+  // Cabeça do peixe: o problema
+  doc.setFillColor(255,122,26);
+  doc.roundedRect(espX1+2, espY-13, cabW, 26, 2, 2, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('PROBLEMA', espX1+2+cabW/2, espY-7, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  const probLinhas = doc.splitTextToSize(d.problema||'—', cabW-5).slice(0,4);
+  probLinhas.forEach((l,i)=> doc.text(l, espX1+2+cabW/2, espY-2.5+(i*3.6), {align:'center'}));
+  doc.setTextColor(0);
+
+  // --- Ramos 4M ---
+  // dois em cima, dois embaixo
+  const ramos = [
+    {nome:'MÁQUINA',     txt:a.quatro_m.maquina,     x:52,  cima:true},
+    {nome:'MATERIAL',    txt:a.quatro_m.material,    x:108, cima:true},
+    {nome:'MÉTODO',      txt:a.quatro_m.metodo,      x:52,  cima:false},
+    {nome:'MÃO DE OBRA', txt:a.quatro_m.mao_de_obra, x:108, cima:false}
+  ];
+
+  const ramoAlt = 38;   // comprimento vertical do ramo
+  const ramoInc = 16;   // inclinação horizontal
+
+  ramos.forEach(r=>{
+    const sinal = r.cima ? -1 : 1;
+    const topoY = espY + sinal*ramoAlt;
+    const topoX = r.x - ramoInc;
+
+    // linha inclinada do ramo
+    doc.setDrawColor(120,128,140); doc.setLineWidth(0.7);
+    doc.line(r.x, espY, topoX, topoY);
+
+    // etiqueta da categoria
+    doc.setFillColor(35,40,51);
+    doc.roundedRect(topoX-19, topoY + (r.cima ? -7 : 0), 38, 7, 1.5, 1.5, 'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.text(r.nome, topoX, topoY + (r.cima ? -2.2 : 4.8), {align:'center'});
+    doc.setTextColor(0);
+
+    // texto da causa, em espinhas menores ao longo do ramo
+    const vazio = !r.txt || r.txt.trim().toUpperCase()==='NA';
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.8);
+    if(vazio){
+      doc.setTextColor(150);
+      doc.text('NA', topoX + (r.cima?12:12), topoY + (r.cima? 6 : -4));
+      doc.setTextColor(0);
+    } else {
+      const linhas = doc.splitTextToSize(r.txt, 44).slice(0,5);
+      linhas.forEach((l,i)=>{
+        // posiciona descendo/subindo em direção à espinha
+        const py = r.cima ? (topoY + 5 + i*4.2) : (topoY - 4 - (linhas.length-1-i)*4.2);
+        const px = topoX + 4 + (r.cima ? i*1.6 : (linhas.length-1-i)*1.6);
+        doc.setDrawColor(190,195,205); doc.setLineWidth(0.3);
+        doc.line(px-2.5, py-1.2, px-0.7, py-1.2);
+        doc.text(l, px, py);
+      });
+    }
+  });
+
+  // --- 5 Porquês abaixo do diagrama ---
+  y = 140;
+  if(Array.isArray(a.cinco_porques) && a.cinco_porques.length){
+    doc.setFillColor(255,122,26); doc.rect(M,y-4,W,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+    doc.text('CADEIA DOS 5 PORQUÊS',M+2,y+0.8); y+=10; doc.setTextColor(0);
+
+    a.cinco_porques.forEach((p,i)=>{
+      quebra(14);
+      // marcador numerado
+      doc.setFillColor(255,122,26);
+      doc.circle(M+3, y-1.2, 2.6, 'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+      doc.text(String(i+1), M+3, y+0.4, {align:'center'});
+      doc.setTextColor(0); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+
+      const linhas = doc.splitTextToSize(String(p), W-12);
+      linhas.forEach((l,j)=>{ quebra(6); doc.text(l, M+9, y + j*4.6); });
+      y += linhas.length*4.6 + 2;
+
+      // conector vertical entre os porquês
+      if(i < a.cinco_porques.length-1){
+        doc.setDrawColor(255,170,110); doc.setLineWidth(0.6);
+        doc.line(M+3, y-3, M+3, y+1);
+        y += 4;
+      }
+    });
+
+    y += 3;
+  }
+
+  // Caixa da causa raiz, fechando a cadeia
+  quebra(26);
+  doc.setFillColor(255,240,228); doc.setDrawColor(255,122,26); doc.setLineWidth(0.6);
+  const crLinhas = doc.splitTextToSize(a.causa_raiz + (a.hipotese?'  [HIPÓTESE — CONFIRMAR EM CAMPO]':''), W-10);
+  const crAlt = 11 + crLinhas.length*4.6;
+  doc.roundedRect(M, y-4, W, crAlt, 2, 2, 'FD');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(185,86,20);
+  doc.text('CAUSA RAIZ', M+4, y+1.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(0);
+  crLinhas.forEach((l,i)=> doc.text(l, M+4, y+7 + i*4.6));
+
+  /* ===== PÁGINA: PLANO DE AÇÃO (tabela editável, paisagem) ===== */
+  doc.addPage('a4','landscape');
+
+  const PW = 297, PH = 210, ML = 8;
+  const AcroText = window.jspdf.AcroFormTextField;
+
+  // Cabeçalho
+  doc.setFillColor(20,23,28); doc.rect(0,0,PW,16,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+  doc.text('PLANO DE AÇÃO',ML,7.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(200);
+  doc.text('Células com fundo cinza são editáveis — abra em Adobe Acrobat, app Arquivos ou navegador de computador',ML,12.5);
+  doc.setTextColor(0);
+
+  // Definição das colunas
+  const cols = [
+    {t:'Nº Ação',                w:10, k:'num',   edit:false},
+    {t:'Problema',               w:32, k:'prob',  edit:true},
+    {t:'Causa raiz',             w:36, k:'causa', edit:true},
+    {t:'Contra medida Corretiva',w:38, k:'corr',  edit:true},
+    {t:'Contra medida Preventiva',w:38,k:'prev',  edit:true},
+    {t:'Responsável',            w:20, k:'resp',  edit:true},
+    {t:'Prazo',                  w:18, k:'prazo', edit:true},
+    {t:'Status',                 w:22, k:'stat',  edit:true},
+    {t:'Origem da Ação',         w:22, k:'orig',  edit:true},
+    {t:'ÁREA',                   w:15, k:'area',  edit:true},
+    {t:'TAG',                    w:15, k:'tag',   edit:true},
+    {t:'Linha',                  w:15, k:'linha', edit:true}
+  ];
+
+  // Usa exatamente o que foi validado na prévia
+  const linhasTab = lerPlanoEditado(ultimoRegistro);
+
+  // Cabeçalho da tabela
+  let ty = 22;
+  const alturaCab = 9;
+  let tx = ML;
+  doc.setFillColor(20,35,80);
+  doc.rect(ML, ty, cols.reduce((s,c)=>s+c.w,0), alturaCab, 'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(6.2);
+  cols.forEach(c=>{
+    const partes = doc.splitTextToSize(c.t, c.w-2);
+    partes.slice(0,2).forEach((p,i)=> doc.text(p, tx + c.w/2, ty + 4 + i*3, {align:'center'}));
+    doc.setDrawColor(255,255,255); doc.setLineWidth(0.2);
+    doc.line(tx + c.w, ty, tx + c.w, ty + alturaCab);
+    tx += c.w;
+  });
+  doc.setTextColor(0);
+  ty += alturaCab;
+
+  // Linhas de dados
+  const alturaLin = 30;
+  linhasTab.forEach((L, idx)=>{
+    if(ty + alturaLin > PH - 12){ doc.addPage('a4','landscape'); ty = 15; }
+
+    tx = ML;
+    // fundo alternado
+    doc.setFillColor(idx % 2 ? 248 : 255, idx % 2 ? 249 : 255, idx % 2 ? 251 : 255);
+    doc.rect(ML, ty, cols.reduce((s,c)=>s+c.w,0), alturaLin, 'F');
+
+    cols.forEach(c=>{
+      const valor = L[c.k] || '';
+
+      if(c.edit && AcroText){
+        // fundo levemente destacado indicando campo editável
+        doc.setFillColor(238,242,248);
+        doc.rect(tx + 0.5, ty + 0.5, c.w - 1, alturaLin - 1, 'F');
+        doc.setDrawColor(190,195,205); doc.setLineWidth(0.25);
+        doc.rect(tx, ty, c.w, alturaLin);
+
+        const campo = new AcroText();
+        campo.fieldName = `${c.k}_${idx+1}`;
+        campo.Rect = [tx + 0.6, ty + 0.6, c.w - 1.2, alturaLin - 1.2];
+        campo.value = valor;
+        campo.defaultValue = valor;
+        campo.fontSize = 6;
+        campo.multiline = true;
+        campo.color = '#111111';
+        campo.textAlign = 'left';
+        doc.addField(campo);
+      } else {
+        doc.setDrawColor(190,195,205); doc.setLineWidth(0.25);
+        doc.rect(tx, ty, c.w, alturaLin);
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(0);
+        doc.text(valor, tx + c.w/2, ty + alturaLin/2 + 1, {align:'center'});
+      }
+
+      tx += c.w;
+    });
+
+    ty += alturaLin;
+  });
+
+  // Rodapé da página
+  doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(120);
+  doc.text('Prazos sugeridos: mitigação imediata = 7 dias | resolução definitiva = 30 dias. Ajuste conforme a criticidade.', ML, ty + 5);
+  doc.setTextColor(0);
 
   const nome=`FSP_${(d.tag||'SEMTAG').replace(/[^A-Za-z0-9-]/g,'')}_${d.data||''}.pdf`;
   doc.save(nome);

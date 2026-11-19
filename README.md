@@ -60,16 +60,6 @@ não pode ser extraída por ninguém que use o aplicativo.
 4. Vá em **Deployments** → nos três pontinhos do último deploy → **Redeploy**.
    (Sem esse redeploy, a chave não entra em vigor.)
 
-### 2.5 Variáveis opcionais (só se precisar)
-Mesma tela de Environment Variables:
-
-| Name | Value | Para que serve |
-|---|---|---|
-| `GEMINI_MODELO` | ex: `gemini-flash-latest` | Força um modelo específico. Sem ela, o sistema testa os modelos em ordem até achar um disponível. Útil se o Google mudar nomes de modelo — você troca aqui, sem mexer no código. |
-| `FSP_DETALHE` | `1` | Mostra o motivo técnico do erro na tela do app, entre colchetes. Ligue para investigar um problema, desligue (ou apague a variável) depois. |
-
-> Depois de criar ou mudar qualquer variável, faça o **Redeploy** do passo 2.4.
-
 ### 2.4 Anotar a URL
 A Vercel vai te dar um endereço, por exemplo:
 ```
@@ -127,11 +117,7 @@ O ícone fica junto dos outros apps e abre em tela cheia, sem barra de navegador
 | "Backend não configurado" | `BACKEND_URL` não editada | Refaça o Passo 3 |
 | "Servidor sem chave configurada" | Variável não criada ou sem redeploy | Refaça o Passo 2.3, incluindo o Redeploy |
 | "Servidor respondeu em formato inesperado" | URL do backend errada | Confira se termina em `/api/analisar` |
-| "O serviço de análise demorou demais" | O Google não respondeu dentro do prazo | Tente de novo. Se insistir, defina `GEMINI_MODELO` com outro modelo (passo 2.5) |
-| "A chave do servidor foi recusada" | Chave inválida, revogada ou cota estourada | Gere nova chave no AI Studio e atualize `GEMINI_API_KEY` + Redeploy |
-| "Nenhum modelo de análise disponível" | A chave não tem acesso a nenhum dos modelos da lista | Confira a chave; ou defina `GEMINI_MODELO` com um modelo que sua conta tenha |
-| "Serviço com fila no momento" | Limite de requisições do plano gratuito | Aguarde alguns segundos e repita |
-| "A análise não pôde ser concluída" | Outro erro do provedor | Ligue `FSP_DETALHE=1` (passo 2.5) para ver o motivo na tela, ou veja Vercel → Logs |
+| "A análise não pôde ser concluída" | Chave inválida ou cota estourada | Veja os logs em Vercel → Deployments → Functions |
 | Erro só no celular, funciona no PC | Cache do navegador | Feche a aba e reabra, ou limpe os dados do site |
 
 Os logs detalhados ficam em **Vercel → seu projeto → Logs**. Nenhum erro técnico é exibido ao
@@ -151,4 +137,3 @@ técnico no celular — ele vê só mensagens em português, simples.
 Para usar Claude em vez de Gemini, altere apenas o arquivo `api/analisar.js`:
 o endpoint, o cabeçalho de autenticação e o caminho de leitura da resposta.
 O app do celular não muda nada — ele só conversa com o seu backend.
-Versão corrigida.
