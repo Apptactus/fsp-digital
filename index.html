@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#14171C">
+<title>FSP Digital — Análise de Falhas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#14171C; --panel:#1C2027; --panel-2:#232833; --line:#2E3440;
+    --ink:#E7EAF0; --ink-dim:#9AA3B2; --amber:#FF7A1A; --amber-dim:#B85614;
+    --ok:#3DDC84; --warn:#FFC145; --danger:#FF5C5C;
+    --mono:'SFMono-Regular',Consolas,Menlo,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+  body{padding-bottom:40px;}
+  .appbar{position:sticky;top:0;z-index:20;background:var(--bg);padding:calc(env(safe-area-inset-top) + 14px) 18px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);}
+  .appbar .mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--amber),var(--amber-dim));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:15px;color:#1A1200;flex-shrink:0;}
+  .appbar h1{font-size:16px;font-weight:700;margin:0;}
+  .appbar p{margin:0;font-size:11px;color:var(--ink-dim);font-family:var(--mono);}
+  .tabs{display:flex;gap:6px;padding:12px 18px 0;}
+  .tab{flex:1;text-align:center;padding:9px 0;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink-dim);background:var(--panel);border:1px solid var(--line);cursor:pointer;}
+  .tab.active{color:#1A1200;background:var(--amber);border-color:var(--amber);}
+  main{padding:16px 18px 10px;max-width:640px;margin:0 auto;}
+  .hidden{display:none !important;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;}
+  .section-label{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--amber);margin:0 0 10px;font-weight:700;}
+  label{display:block;font-size:12.5px;color:var(--ink-dim);margin:12px 0 6px;font-weight:600;}
+  input,textarea{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:11px 12px;font-size:14.5px;font-family:var(--sans);outline:none;}
+  input:focus,textarea:focus{border-color:var(--amber);}
+  textarea{resize:vertical;min-height:64px;line-height:1.4;}
+  #fTag{font-family:var(--mono);}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .radio-group{display:flex;gap:8px;margin-top:4px;}
+  .radio-opt{flex:1;text-align:center;padding:9px 4px;border-radius:9px;font-size:13px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink-dim);cursor:pointer;font-weight:600;}
+  .radio-opt.selected{border-color:var(--amber);color:var(--amber);background:rgba(255,122,26,0.08);}
+  .repeat-extra{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .btn{width:100%;padding:14px;border-radius:11px;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--sans);}
+  .btn-primary{background:var(--amber);color:#1A1200;}
+  .btn-primary:disabled{background:#4A4436;color:#8A8578;}
+  .btn-secondary{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);}
+  .btn-row{display:flex;gap:10px;margin-top:12px;}
+  .btn-row .btn{width:auto;flex:1;font-size:13.5px;padding:12px 8px;}
+  .error-box{background:rgba(255,92,92,0.1);border:1px solid var(--danger);color:#FFB3B3;padding:11px 13px;border-radius:10px;font-size:13px;margin-top:12px;}
+  .setup-box{background:rgba(255,193,69,0.08);border:1px solid var(--warn);color:#FFE0A0;padding:11px 13px;border-radius:10px;font-size:12.5px;margin-bottom:14px;line-height:1.5;}
+  .loading{display:flex;align-items:center;gap:10px;padding:16px;color:var(--ink-dim);font-size:13.5px;}
+  .spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--line);border-top-color:var(--amber);animation:spin .8s linear infinite;flex-shrink:0;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .report-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px;}
+  .status-chip{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:6px;text-transform:uppercase;white-space:nowrap;}
+  .status-analise{background:rgba(255,193,69,.14);color:var(--warn);}
+  .status-corrigido{background:rgba(61,220,132,.14);color:var(--ok);}
+  .status-monitoramento{background:rgba(255,122,26,.14);color:var(--amber);}
+  .field-block{margin-bottom:14px;}
+  .field-title{font-size:11px;font-family:var(--mono);color:var(--ink-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+  .field-value{font-size:14px;line-height:1.5;white-space:pre-wrap;}
+  .m4-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .m4-item{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px;}
+  .m4-item .k{font-family:var(--mono);font-size:9.5px;color:var(--amber);font-weight:700;margin-bottom:3px;}
+  .m4-item .v{font-size:12.5px;line-height:1.4;}
+  .m4-item .v.na{color:var(--ink-dim);font-style:italic;}
+  .porques{counter-reset:p;padding:0;margin:0;list-style:none;}
+  .porques li{background:var(--panel-2);border-left:2px solid var(--amber-dim);padding:8px 11px;margin-bottom:6px;font-size:12.5px;line-height:1.45;border-radius:0 8px 8px 0;}
+  .causa-raiz-box{background:rgba(255,122,26,.08);border:1px solid var(--amber-dim);border-radius:10px;padding:12px;}
+  .hip-flag{display:inline-block;margin-top:8px;font-size:10.5px;font-family:var(--mono);font-weight:700;color:var(--warn);background:rgba(255,193,69,.12);padding:3px 8px;border-radius:6px;}
+  .action-item{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px;}
+  .action-item .tag{font-family:var(--mono);font-size:9.5px;font-weight:700;text-transform:uppercase;color:var(--amber);margin-bottom:5px;display:block;}
+  .divider{height:1px;background:var(--line);margin:16px 0;}
+  .hist-item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:10px;cursor:pointer;}
+  .hist-item .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px;}
+  .hist-item .tag-line{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;}
+  .hist-item .prob{font-size:13px;line-height:1.4;}
+  .hist-item .meta{font-size:11px;color:var(--ink-dim);margin-top:5px;}
+  .empty-state{text-align:center;padding:50px 20px;color:var(--ink-dim);}
+  .empty-state .big{font-size:30px;margin-bottom:8px;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--line);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:50;opacity:0;pointer-events:none;transition:.25s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="mark">4M</div>
+  <div>
+    <h1>FSP Digital</h1>
+    <p>Análise de Falha · 4M + 5 Porquês</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tabNova" onclick="switchTab('nova')">Nova Análise</div>
+  <div class="tab" id="tabHist" onclick="switchTab('hist')">Histórico</div>
+</div>
+
+<main>
+  <div id="viewNova">
+    <div class="card" id="formCard">
+      <p class="section-label">Dados do técnico</p>
+      <div class="row3">
+        <div><label>Data</label><input type="date" id="fData"></div>
+        <div><label>Linha</label><input type="text" id="fLinha" placeholder="Envase 02"></div>
+        <div><label>TAG</label><input type="text" id="fTag" placeholder="MT-104"></div>
+      </div>
+
+      <label>Problema (o que ocorreu?)</label>
+      <textarea id="fProblema" placeholder="Ex: Motor do transportador principal parou durante operação"></textarea>
+
+      <label>Descrição (o que foi observado?)</label>
+      <textarea id="fDescricao" placeholder="Ex: Ruído metálico antes da parada, correia com folga visível..."></textarea>
+
+      <label>Falha repetida?</label>
+      <div class="radio-group">
+        <div class="radio-opt" id="optNao" onclick="setRepeat(false)">Não</div>
+        <div class="radio-opt" id="optSim" onclick="setRepeat(true)">Sim</div>
+      </div>
+      <div class="repeat-extra hidden" id="repeatExtra">
+        <div><label>Quantas vezes?</label><input type="number" id="fVezes" min="1" placeholder="3"></div>
+        <div><label>Período aproximado</label><input type="text" id="fPeriodo" placeholder="últimos 30 dias"></div>
+      </div>
+
+      <label>Ação corretiva já tomada</label>
+      <textarea id="fCorretiva" placeholder="O que você já fez para resolver agora"></textarea>
+
+      <label>Ação preventiva pensada (opcional)</label>
+      <textarea id="fPreventiva" placeholder="O que você propõe para não repetir"></textarea>
+
+      <label>Técnico</label>
+      <input type="text" id="fTecnico" placeholder="Seu nome">
+
+      <button class="btn btn-primary" style="margin-top:16px" onclick="gerarAnalise()" id="btnGerar">Gerar Análise</button>
+      <div id="errorBox"></div>
+    </div>
+
+    <div id="loadingCard" class="card hidden">
+      <div class="loading"><div class="spinner"></div><span>Rodando 4M + 5 Porquês…</span></div>
+    </div>
+
+    <div id="resultCard" class="card hidden"></div>
+  </div>
+
+  <div id="viewHist" class="hidden"><div id="histList"></div></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==================================================================
+   CONFIGURE AQUI: cole a URL do seu backend na Vercel.
+   Ex: "https://fsp-digital.vercel.app/api/analisar"
+   ================================================================== */
+// O backend fica no mesmo domínio do app, então o endereço é detectado sozinho.
+// Não precisa configurar nada.
+const BACKEND_URL = "/api/analisar";
+/* ================================================================== */
+
+let ultimoRegistro = null;
+let _gerando = false;
+
+
+
+function switchTab(t){
+  document.getElementById('tabNova').classList.toggle('active', t==='nova');
+  document.getElementById('tabHist').classList.toggle('active', t==='hist');
+  document.getElementById('viewNova').classList.toggle('hidden', t!=='nova');
+  document.getElementById('viewHist').classList.toggle('hidden', t!=='hist');
+  if(t==='hist') carregarHistorico();
+}
+
+function setRepeat(sim){
+  document.getElementById('optNao').classList.toggle('selected', !sim);
+  document.getElementById('optSim').classList.toggle('selected', sim);
+  document.getElementById('repeatExtra').classList.toggle('hidden', !sim);
+  window._repete = sim;
+}
+
+document.getElementById('fData').value = new Date().toISOString().slice(0,10);
+setRepeat(false);
+
+function showToast(m){
+  const t=document.getElementById('toast');
+  t.textContent=m; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+function escapeHtml(s){
+  if(s==null) return '';
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function coletarDados(){
+  return {
+    data:document.getElementById('fData').value,
+    linha:document.getElementById('fLinha').value.trim(),
+    tag:document.getElementById('fTag').value.trim(),
+    problema:document.getElementById('fProblema').value.trim(),
+    descricao:document.getElementById('fDescricao').value.trim(),
+    repete:!!window._repete,
+    vezes:document.getElementById('fVezes').value.trim(),
+    periodo:document.getElementById('fPeriodo').value.trim(),
+    corretiva:document.getElementById('fCorretiva').value.trim(),
+    preventiva:document.getElementById('fPreventiva').value.trim(),
+    tecnico:document.getElementById('fTecnico').value.trim()
+  };
+}
+
+async function gerarAnalise(){
+  if(_gerando) return;
+  const d = coletarDados();
+  const errBox = document.getElementById('errorBox');
+  errBox.innerHTML='';
+
+  if(!d.problema || !d.descricao){
+    errBox.innerHTML='<div class="error-box">Preencha ao menos "Problema" e "Descrição".</div>';
+    return;
+  }
+
+  _gerando=true;
+  document.getElementById('btnGerar').disabled=true;
+  document.getElementById('resultCard').classList.add('hidden');
+  document.getElementById('loadingCard').classList.remove('hidden');
+
+  // Prazo do lado do app: se o servidor não responder, avisa em vez de
+  // deixar a tela de carregando para sempre.
+  const ctrl = new AbortController();
+  const prazo = setTimeout(()=>ctrl.abort(), 55000);
+
+  try{
+    let resp;
+    try{
+      resp = await fetch(BACKEND_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(d),
+        signal: ctrl.signal
+      });
+    }catch(e){
+      if(e && e.name==='AbortError') throw new Error('O servidor demorou demais para responder. Tente novamente em alguns segundos.');
+      throw new Error('Sem conexão com o servidor. Verifique a internet e tente novamente.');
+    }
+
+    const raw = await resp.text();
+    let json;
+    try{ json = JSON.parse(raw); }
+    catch(e){
+      // Resposta que não é JSON: normalmente a página de erro da própria
+      // hospedagem (tempo esgotado na função) ou URL de backend errada.
+      if(resp.status===504 || resp.status===502 || /timed out|timeout/i.test(raw))
+        throw new Error('O servidor atingiu o tempo limite durante a análise. Tente novamente.');
+      throw new Error('Servidor respondeu em formato inesperado. Confira a URL do backend.');
+    }
+
+    if(!resp.ok) throw new Error((json.erro || ('Erro '+resp.status)) + (json.detalhe ? '\n\n['+json.detalhe+']' : ''));
+    if(!json.quatro_m || !json.causa_raiz || !Array.isArray(json.acoes)) throw new Error('Análise incompleta. Tente novamente.');
+
+    const reg={id:'reg_'+Date.now(),input:d,analise:json,criadoEm:new Date().toISOString()};
+    ultimoRegistro=reg;
+    renderResultado(reg);
+    await salvarRegistro(reg);
+  }catch(err){
+    console.error(err);
+    errBox.innerHTML='<div class="error-box" style="white-space:pre-wrap">'+escapeHtml(err.message)+'</div>';
+  }finally{
+    clearTimeout(prazo);
+    _gerando=false;
+    document.getElementById('loadingCard').classList.add('hidden');
+    document.getElementById('btnGerar').disabled=false;
+  }
+}
+
+function statusClass(s){
+  if(s==='Corrigido') return 'status-corrigido';
+  if(s==='Em monitoramento') return 'status-monitoramento';
+  return 'status-analise';
+}
+
+function renderResultado(reg){
+  const d=reg.input,a=reg.analise;
+  const m4=(l,v)=>`<div class="m4-item"><div class="k">${l}</div><div class="v ${v==='NA'?'na':''}">${escapeHtml(v)}</div></div>`;
+  const porques = Array.isArray(a.cinco_porques) && a.cinco_porques.length
+    ? `<div class="divider"></div><p class="section-label">5 Porquês</p><ul class="porques">${a.cinco_porques.map((p,i)=>`<li><b>${i+1}º</b> ${escapeHtml(p)}</li>`).join('')}</ul>` : '';
+  const acoes=a.acoes.map(ac=>`<div class="action-item"><span class="tag">${escapeHtml(ac.tipo)}</span><div class="field-value">${escapeHtml(ac.texto)}</div></div>`).join('');
+
+  document.getElementById('resultCard').innerHTML=`
+    <div class="report-head">
+      <p class="section-label" style="margin:0">Relatório gerado</p>
+      <span class="status-chip ${statusClass(a.status_sugerido)}">${escapeHtml(a.status_sugerido)}</span>
+    </div>
+    <div class="field-block"><div class="field-title">TAG / Linha</div><div class="field-value">${escapeHtml(d.tag||'—')} · ${escapeHtml(d.linha||'—')}</div></div>
+    <div class="field-block"><div class="field-title">Problema</div><div class="field-value">${escapeHtml(d.problema)}</div></div>
+    <div class="divider"></div>
+    <p class="section-label">4M — Possíveis causas</p>
+    <div class="m4-grid">${m4('Material',a.quatro_m.material)}${m4('Máquina',a.quatro_m.maquina)}${m4('Método',a.quatro_m.metodo)}${m4('Mão de obra',a.quatro_m.mao_de_obra)}</div>
+    ${porques}
+    <div class="divider"></div>
+    <p class="section-label">Causa raiz</p>
+    <div class="causa-raiz-box"><div class="field-value">${escapeHtml(a.causa_raiz)}</div>${a.hipotese?'<span class="hip-flag">HIPÓTESE — CONFIRMAR EM CAMPO</span>':''}</div>
+    <div class="field-block" style="margin-top:14px"><div class="field-title">Avaliação das ações do técnico</div><div class="field-value">${escapeHtml(a.analise_acoes_tecnico||'—')}</div></div>
+    <div class="divider"></div>
+    <p class="section-label">Ações sugeridas pela análise</p>
+    ${acoes}
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="gerarPDF()">Baixar PDF</button>
+      <button class="btn btn-secondary" onclick="copiarRelatorio()">Copiar</button>
+      <button class="btn btn-secondary" onclick="novaAnalise()">Nova</button>
+    </div>`;
+  document.getElementById('resultCard').classList.remove('hidden');
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function montarTexto(reg){
+  const d=reg.input,a=reg.analise;
+  const acoes=a.acoes.map((ac,i)=>`${i+1}. *${ac.tipo}:*\n${ac.texto}`).join('\n\n');
+  return `*RELATÓRIO PADRÃO – MANUTENÇÃO*
+
+*DATA:* ${d.data||'A PREENCHER'}
+*LINHA:* ${d.linha||'A PREENCHER'}
+*TAG:* ${d.tag||'A PREENCHER'}
+
+*PROBLEMA:*
+${d.problema}
+
+*DESCRIÇÃO:*
+${d.descricao}
+
+*FALHA REPETIDA?*
+${d.repete?`Sim → ${d.vezes||'?'} vezes | Período: ${d.periodo||'não informado'}`:'Não'}
+
+*4M – POSSÍVEIS CAUSAS*
+- *MATERIAL:* ${a.quatro_m.material}
+- *MÁQUINA:* ${a.quatro_m.maquina}
+- *MÉTODO:* ${a.quatro_m.metodo}
+- *MÃO DE OBRA:* ${a.quatro_m.mao_de_obra}
+
+*CAUSA RAIZ:*
+${a.causa_raiz}${a.hipotese?' [HIPÓTESE — CONFIRMAR EM CAMPO]':''}
+
+*AÇÕES:*
+${acoes}
+
+*STATUS:* ${a.status_sugerido}
+
+*TÉCNICO:* ${d.tecnico||'A PREENCHER'}`;
+}
+
+function copiarRelatorio(){
+  if(!ultimoRegistro) return;
+  navigator.clipboard.writeText(montarTexto(ultimoRegistro))
+    .then(()=>showToast('Relatório copiado'))
+    .catch(()=>showToast('Não foi possível copiar'));
+}
+
+/* ============ PDF ============ */
+function gerarPDF(){
+  if(!ultimoRegistro) return;
+  const d=ultimoRegistro.input, a=ultimoRegistro.analise;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm',format:'a4'});
+  const M=15, W=180;
+  let y=M;
+
+  const linha=()=>{doc.setDrawColor(200);doc.line(M,y,M+W,y);y+=5;};
+  const quebra=(h=10)=>{ if(y+h>282){doc.addPage();y=M;} };
+
+  const titulo=(t)=>{
+    quebra(12);
+    doc.setFillColor(255,122,26); doc.rect(M,y-4,W,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+    doc.text(t,M+2,y+0.8); y+=10; doc.setTextColor(0,0,0);
+  };
+
+  const campo=(rot,val)=>{
+    quebra(14);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(110);
+    doc.text(rot,M,y); y+=4.5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(0);
+    const linhas=doc.splitTextToSize(String(val||'—'),W);
+    linhas.forEach(l=>{ quebra(6); doc.text(l,M,y); y+=5; });
+    y+=3;
+  };
+
+  // Cabeçalho
+  doc.setFillColor(20,23,28); doc.rect(0,0,210,26,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(15);
+  doc.text('RELATÓRIO PADRÃO – MANUTENÇÃO',M,13);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(200);
+  doc.text('Análise de Falha · Ishikawa 4M + 5 Porquês',M,20);
+  doc.setTextColor(0); y=36;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text(`DATA: ${d.data||'—'}`,M,y);
+  doc.text(`LINHA: ${d.linha||'—'}`,M+62,y);
+  doc.text(`TAG: ${d.tag||'—'}`,M+124,y);
+  y+=7; linha();
+
+  campo('PROBLEMA (o que ocorreu?)',d.problema);
+  campo('DESCRIÇÃO (o que foi observado?)',d.descricao);
+  campo('FALHA REPETIDA?', d.repete?`Sim — ${d.vezes||'?'} vezes | Período: ${d.periodo||'não informado'}`:'Não');
+
+  titulo('4M – POSSÍVEIS CAUSAS');
+  campo('MATERIAL',a.quatro_m.material);
+  campo('MÁQUINA',a.quatro_m.maquina);
+  campo('MÉTODO',a.quatro_m.metodo);
+  campo('MÃO DE OBRA',a.quatro_m.mao_de_obra);
+
+  if(Array.isArray(a.cinco_porques)&&a.cinco_porques.length){
+    titulo('5 PORQUÊS');
+    a.cinco_porques.forEach((p,i)=>campo(`${i+1}º PORQUÊ`,p));
+  }
+
+  titulo('CAUSA RAIZ');
+  campo('POR QUE ACONTECEU?', a.causa_raiz + (a.hipotese?'  [HIPÓTESE — CONFIRMAR EM CAMPO]':''));
+  campo('AVALIAÇÃO DAS AÇÕES DO TÉCNICO', a.analise_acoes_tecnico);
+
+  titulo('AÇÕES DEFINIDAS PELA ANÁLISE');
+  a.acoes.forEach((ac,i)=>campo(`${i+1}. ${ac.tipo}`,ac.texto));
+
+  quebra(20); linha();
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text(`STATUS: ${a.status_sugerido}`,M,y);
+  doc.text(`TÉCNICO: ${d.tecnico||'—'}`,M+90,y);
+
+  const nome=`FSP_${(d.tag||'SEMTAG').replace(/[^A-Za-z0-9-]/g,'')}_${d.data||''}.pdf`;
+  doc.save(nome);
+  showToast('PDF gerado');
+}
+
+function novaAnalise(){
+  document.getElementById('resultCard').classList.add('hidden');
+  ['fLinha','fTag','fProblema','fDescricao','fVezes','fPeriodo','fCorretiva','fPreventiva'].forEach(i=>document.getElementById(i).value='');
+  setRepeat(false);
+  document.getElementById('formCard').scrollIntoView({behavior:'smooth'});
+}
+
+/* ============ Histórico (localStorage) ============ */
+function lerIndex(){
+  try{ return JSON.parse(localStorage.getItem('fsp_index')||'[]'); }catch(e){ return []; }
+}
+async function salvarRegistro(reg){
+  try{
+    localStorage.setItem('fsp_'+reg.id, JSON.stringify(reg));
+    const idx=lerIndex(); idx.unshift(reg.id);
+    localStorage.setItem('fsp_index', JSON.stringify(idx.slice(0,200)));
+  }catch(e){ console.error(e); }
+}
+function carregarHistorico(){
+  const el=document.getElementById('histList');
+  const ids=lerIndex();
+  if(!ids.length){
+    el.innerHTML='<div class="empty-state"><div class="big">📋</div>Nenhuma análise salva ainda.</div>';
+    return;
+  }
+  const regs=ids.map(id=>{ try{ return JSON.parse(localStorage.getItem('fsp_'+id)); }catch(e){ return null; } }).filter(Boolean);
+  el.innerHTML=regs.map(r=>`
+    <div class="hist-item" onclick="abrirHist('${r.id}')">
+      <div class="top">
+        <span class="tag-line">${escapeHtml(r.input.tag||'SEM TAG')} · ${escapeHtml(r.input.linha||'—')}</span>
+        <span class="status-chip ${statusClass(r.analise.status_sugerido)}">${escapeHtml(r.analise.status_sugerido)}</span>
+      </div>
+      <div class="prob">${escapeHtml(r.input.problema)}</div>
+      <div class="meta">${escapeHtml(r.input.data||'')} · ${escapeHtml(r.input.tecnico||'técnico não informado')}</div>
+    </div>`).join('');
+}
+function abrirHist(id){
+  try{
+    const reg=JSON.parse(localStorage.getItem('fsp_'+id));
+    ultimoRegistro=reg; switchTab('nova'); renderResultado(reg);
+  }catch(e){}
+}
+</script>
+</body>
+</html>

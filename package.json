@@ -1,0 +1,7 @@
+{
+  "name": "fsp-digital",
+  "version": "1.0.0",
+  "description": "Analise de falhas de manutencao - Ishikawa 4M + 5 Porques",
+  "type": "module",
+  "private": true
+}
